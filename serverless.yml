@@ -290,113 +290,104 @@ resources:
                     - "cognito-identity:SetIdentityPoolRoles"
                     - "iam:PassRole"
                   Resource: "*"
-    # CognitoIdentityPool:
-    #   Type: Custom::CognitoIdentityPool
-    #   Properties:
-    #     "ServiceToken": { "Fn::GetAtt": ["Lambda", "Arn"] },
-    #     "Options": {
-    #       "AllowUnauthenticatedIdentities": { "Ref": "AllowUnauthenticatedIdentities" },
-    #       "IdentityPoolName": { "Ref": "IdentityPoolName" },
-    #       "CognitoIdentityProviders": { "Fn::If": ["EMPTY_CognitoIdentityProviders", { "Ref": "AWS::NoValue" }, { "Ref": "CognitoIdentityProviders" }] },
-    #       "DeveloperProviderName": { "Fn::If": ["EMPTY_DeveloperProviderName", { "Ref": "AWS::NoValue" }, { "Ref": "DeveloperProviderName" }] },
-    #       "OpenIdConnectProviderARNs": { "Fn::If": ["EMPTY_OpenIdConnectProviderARNs", { "Ref": "AWS::NoValue" }, { "Ref": "OpenIdConnectProviderARNs" }] },
-    #       "SamlProviderARNs": { "Fn::If": [ "EMPTY_SamlProviderARNs", { "Ref": "AWS::NoValue" }, { "Ref": "SamlProviderARNs" }] },
-    #       "SupportedLoginProviders": { "Fn::If": ["EMPTY_SupportedLoginProviders", { "Ref": "AWS::NoValue" }, { "Ref": "SupportedLoginProviders" }]}
-    #     }
-    #   }
-    # },
-    # "CognitoAuthenticatedRole": {
-    #   "Type": "AWS::IAM::Role",
-    #   "Properties": {
-    #     "AssumeRolePolicyDocument": {
-    #       "Statement": [
-    #         {
-    #           "Effect": "Allow",
-    #           "Principal": {
-    #             "Federated": "cognito-identity.amazonaws.com"
-    #           },
-    #           "Action": "sts:AssumeRoleWithWebIdentity",
-    #           "Condition": {
-    #             "StringEquals": {
-    #               "cognito-identity.amazonaws.com:aud": { "Fn::GetAtt": ["CognitoIdentityPool", "IdentityPoolId"] }
-    #             },
-    #             "ForAnyValue:StringLike": {
-    #               "cognito-identity.amazonaws.com:amr": "authenticated"
-    #             }
-    #           }
-    #         }
-    #       ]
-    #     }
-    #   }
-    # },
-    # "CognitoUnauthenticatedRole": {
-    #   "Type": "AWS::IAM::Role",
-    #   "Condition": "UseUnauthenticatedIdentities",
-    #   "Properties": {
-    #     "AssumeRolePolicyDocument": {
-    #       "Statement": [
-    #         {
-    #           "Effect": "Allow",
-    #           "Principal": {
-    #             "Federated": "cognito-identity.amazonaws.com"
-    #           },
-    #           "Action": "sts:AssumeRoleWithWebIdentity",
-    #           "Condition": {
-    #             "StringEquals": {
-    #               "cognito-identity.amazonaws.com:aud": { "Fn::GetAtt": ["CognitoIdentityPool", "IdentityPoolId"] }
-    #             },
-    #             "ForAnyValue:StringLike": {
-    #               "cognito-identity.amazonaws.com:amr": "unauthenticated"
-    #             }
-    #           }
-    #         }
-    #       ]
-    #     },
-    #     "Path": "/pingbot/",
-    #     "Policies": [
-    #       {
-    #         "PolicyName": "CognitoUnAuthenticatedPolicy",
-    #         "PolicyDocument": {
-    #           "Statement": [
-    #             {
-    #               "Sid": "CognitoAuthPermission",
-    #               "Effect": "Allow",
-    #               "Action": [
-    #                 "mobileanalytics:PutEvents",
-    #                 "cognito-sync:*"
-    #               ],
-    #               "Resource": [
-    #                 "*"
-    #               ]
-    #             },
-    #             {
-    #               "Effect": "Allow",
-    #               "Action": [
-    #                 "dynamodb:DeleteItem",
-    #                 "dynamodb:GetItem",
-    #                 "dynamodb:PutItem",
-    #                 "dynamodb:Scan"
-    #               ],
-    #               "Resource": [
-    #                 { "Fn::Join": [":", ["arn:aws:dynamodb", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "table/pingbot-*"]] }
-    #               ]
-    #             }
-    #           ]
-    #         }
-    #       }
-    #     ]
-    #   }
-    # },
-    # "CognitoIdentityPoolRoles": {
-    #   "Type": "Custom::CognitoIdentityPoolRoles",
-    #   "Properties": {
-    #     "ServiceToken": { "Fn::GetAtt": ["Lambda", "Arn"] },
-    #     "Options": {
-    #       "IdentityPoolId": { "Fn::GetAtt": ["CognitoIdentityPool", "IdentityPoolId"] },
-    #       "Roles": {
-    #         "authenticated": { "Fn::GetAtt": ["CognitoAuthenticatedRole", "Arn"] },
-    #         "unauthenticated": { "Fn::If": ["UseUnauthenticatedIdentities", { "Fn::GetAtt": ["CognitoUnauthenticatedRole", "Arn"] }, { "Ref": "AWS::NoValue" }] }
-    #       }
-    #     }
-    #   }
-    # }
+    CognitoIdentityPool:
+      Type: Custom::CognitoIdentityPool
+      Properties:
+        ServiceToken:
+          'Fn::GetAtt': [ PingbotLambdaCognitoDeployerLambdaFunction, Arn ]
+        Options:
+          AllowUnauthenticatedIdentities: true
+          IdentityPoolName: "pingbotWeb"
+          CognitoIdentityProviders: { "Ref": "AWS::NoValue" }
+          DeveloperProviderName: { "Ref": "AWS::NoValue" }
+          OpenIdConnectProviderARNs: { "Ref": "AWS::NoValue" }
+          SamlProviderARNs: { "Ref": "AWS::NoValue" }
+          SupportedLoginProviders: { "Ref": "AWS::NoValue" }
+    CognitoAuthenticatedRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Federated: cognito-identity.amazonaws.com
+              Action: sts:AssumeRoleWithWebIdentity
+              Condition:
+                StringEquals:
+                  "cognito-identity.amazonaws.com:aud":
+                    "Fn::GetAtt": [ "CognitoIdentityPool", "IdentityPoolId" ]
+                ForAnyValue:StringLike:
+                  "cognito-identity.amazonaws.com:amr": "authenticated"
+    CognitoUnauthenticatedRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Federated: cognito-identity.amazonaws.com
+              Action: sts:AssumeRoleWithWebIdentity
+              Condition:
+                StringEquals:
+                  "cognito-identity.amazonaws.com:aud":
+                    "Fn::GetAtt": [ "CognitoIdentityPool", "IdentityPoolId" ]
+                ForAnyValue:StringLike:
+                  "cognito-identity.amazonaws.com:amr": "unauthenticated"
+        # "Path": "/pingbot/",
+        Path: /
+        Policies:
+          - PolicyName: CognitoUnAuthenticatedPolicy
+            PolicyDocument:
+              Statement:
+                - Sid: CognitoAuthPermission
+                  Effect: Allow
+                  Action:
+                    - "mobileanalytics:PutEvents"
+                    - "cognito-sync:*"
+                  Resource: "*"
+                - Effect: Allow
+                  Action:
+                    - "dynamodb:DeleteItem"
+                    - "dynamodb:GetItem"
+                    - "dynamodb:PutItem"
+                    - "dynamodb:Scan"
+                  Resource:
+                    - Fn::GetAtt: [PingbotTargets, Arn]
+                    - Fn::GetAtt: [PingbotResults, Arn]
+    CognitoIdentityPoolRoles:
+      Type: Custom::CognitoIdentityPoolRoles
+      Properties:
+        ServiceToken:
+          'Fn::GetAtt': [ PingbotLambdaCognitoDeployerLambdaFunction, Arn ]
+        Options:
+          IdentityPoolId:
+            "Fn::GetAtt": [ "CognitoIdentityPool", "IdentityPoolId" ]
+          Roles:
+            authenticated:
+              "Fn::GetAtt": [ "CognitoAuthenticatedRole", "Arn" ]
+            unauthenticated:
+              "Fn::GetAtt": [ "CognitoUnauthenticatedRole", "Arn" ]
+    pingbotweb :
+      Type : AWS::S3::Bucket
+      Properties :
+        WebsiteConfiguration:
+          IndexDocument : index.html
+          ErrorDocument : error.html
+    BucketPolicy :
+      Type : AWS::S3::BucketPolicy
+      Properties :
+        Bucket : { "Ref" : "pingbotweb" }
+        PolicyDocument:
+          Id : AllowControlFromPermittedIPAddresses
+          Version: "2012-10-17"
+          Statement:
+            - Action:
+                - "s3:GetObject"
+              Effect: Allow
+              Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref": "pingbotweb" } , "/*" ]] }
+              # "Fn::GetAtt": [ "pingbotweb", "Arn" ]
+              Principal:
+                AWS : "*"
+              Condition:
+                IpAddress:
+                  aws:SourceIp:  "0.0.0.0/0"
