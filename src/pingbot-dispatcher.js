@@ -62,7 +62,7 @@ const dispatch = (event, callback) => {
 }
 
 exports.handler = (event, context, callback) => {
-    botConfig = JSON.parse(require('fs').readFileSync('./config.json'))
+    botConfig = JSON.parse(require('fs').readFileSync('./src/config.json'))
     console.log(botConfig)
     dispatch(event, callback)
 }

@@ -38,7 +38,7 @@ const saveToDynamoDb = (uuid, resCode, resMessage, isPassed, callback) => {
 }
 
 exports.handler = (event, context, callback) => {
-    botConfig = JSON.parse(require('fs').readFileSync('./config.json'))
+    botConfig = JSON.parse(require('fs').readFileSync('./src/config.json'))
     console.log('Function started for uuid: %s', event.uuid)
     let client = event.options.protocol == 'http:' ? require('http') : require('https')
     event.retry = ('retry' in event) ? event.retry + 1 : 1

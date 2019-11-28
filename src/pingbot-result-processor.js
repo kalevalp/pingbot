@@ -20,7 +20,7 @@ const sendNotification = (opts) => {
 }
 
 exports.handler = (event, context, callback) => {
-    botConfig = JSON.parse(require('fs').readFileSync('./config.json'))
+    botConfig = JSON.parse(require('fs').readFileSync('./src/config.json'))
     event.Records.forEach((record) => {
         var notify = false
         if (record.eventName === 'INSERT') {

@@ -75,7 +75,7 @@ const postMessage = (message, hookUrl, callback) => {
 }
 
 exports.handler = (event, context, callback) => {
-    botConfig = JSON.parse(require('fs').readFileSync('./config.json'))
+    botConfig = JSON.parse(require('fs').readFileSync('./src/config.json'))
     var target = event.target
     var result = event.result
     
