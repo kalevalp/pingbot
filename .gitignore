@@ -8,3 +8,4 @@ scripts/config.sh
 src/web/dist/
 
 .serverless
+*~

@@ -1,0 +1,25 @@
+{
+  "name": "pingbot",
+  "version": "1.0.0",
+  "description": "A proof of concept of website monitoring/health-checking tool based on serverless architecture,  powered by AWS Lambda, Amazon DynamoDB, Amazon CloudWatch, Amazon S3 and Facebook React.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kalevalp/pingbot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kalevalp/pingbot/issues"
+  },
+  "homepage": "https://github.com/kalevalp/pingbot#readme",
+  "dependencies": {
+    "uuid": "^3.3.3"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.580.0"
+  }
+}

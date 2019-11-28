@@ -56,6 +56,34 @@ functions:
     role:
       'Fn::GetAtt': [ PingbotLambdaRole, Arn ]
 
+  PingbotLambdaAddMonitoredURL:
+    name: pingbot-add-url
+    handler: src/pingbot-add-url.handler
+    description : "Function to add a URL to be pinged"
+    memorySize: 1024
+    timeout: 6
+    role:
+      'Fn::GetAtt': [ PingbotLambdaRole, Arn ]
+    events:
+      - http:
+          path: addurl
+          method: post
+          cors: true
+
+  PingbotLambdaRemoveMonitoredURL:
+    name: pingbot-remove-url
+    handler: src/pingbot-remove-url.handler
+    description : "Function to remove a URL to be pinged"
+    memorySize: 1024
+    timeout: 6
+    role:
+      'Fn::GetAtt': [ PingbotLambdaRole, Arn ]
+    events:
+      - http:
+          path: removeurl
+          method: delete
+          cors: true
+
 resources:
   Resources:
     PingbotTargets:
@@ -188,6 +216,7 @@ resources:
                     - "dynamodb:GetItem"
                     - "dynamodb:PutItem"
                     - "dynamodb:Scan"
+                    - "dynamodb:DeleteItem"
                   Resource:
                     - Fn::GetAtt: [PingbotTargets, Arn]
                     - Fn::GetAtt: [PingbotResults, Arn]
