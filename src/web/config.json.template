@@ -1,7 +1,0 @@
-{
-    "pollInterval": 60000,
-    "aws": {
-        "region": "AWS_DEFAULT_REGION",
-        "cognitoArn": "COGNITO_IDPOOL_ID"
-    }
-}

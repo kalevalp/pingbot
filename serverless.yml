@@ -8,30 +8,25 @@ provider:
 
 package:
   exclude:
-    - docs/**
-    - scripts/**
     - README.md
     - LICENSE
-    - res/cfn/**
-    - res/example/**
-    - src/web/**
-    - src/bot/README.md
+    - res/
 
 functions:
   PingbotLambdaDispatcher:
     name: pingbot-dispatcher
-    handler: src/bot/pingbot-dispatcher.handler
+    handler: src/pingbot-dispatcher.handler
     description : "Function to fetch check targets from DynamoDB table and invoke the health check function"
     memorySize: 1024
     timeout: 60
     role:
       'Fn::GetAtt': [ PingbotDispatcherLambdaRole, Arn ]
     events:
-      - schedule: rate(2 hours)
+      - schedule: rate(1 minute)
 
   PingbotLambdaHealthChecker:
     name: pingbot-health-checker
-    handler: src/bot/pingbot-health-checker.handler
+    handler: src/pingbot-health-checker.handler
     description : "Function to make an HTTP/HTTPS request and save result to DynamoDB table"
     memorySize: 1024
     timeout: 55
@@ -40,7 +35,7 @@ functions:
 
   PingbotLambdaResultProcessor:
     name: pingbot-result-processor
-    handler: src/bot/pingbot-result-processor.handler
+    handler: src/pingbot-result-processor.handler
     description : "Function to handle the check status changes (invokes notifiers, persists status history)"
     memorySize: 1024
     timeout: 50
@@ -54,22 +49,12 @@ functions:
 
   PingbotLambdaSlackNotifier:
     name: pingbot-slack-notifier
-    handler: src/bot/pingbot-slack-notifier.handler
+    handler: src/pingbot-slack-notifier.handler
     description : "Function to notify the check status changes"
     memorySize: 1024
     timeout: 50
     role:
       'Fn::GetAtt': [ PingbotLambdaRole, Arn ]
-
-
-  PingbotLambdaCognitoDeployer:
-    name: pingbot-cognito-deployer
-    handler: res/lambda/pingbot-cognito-deployer.handler
-    description : "Function to create Cognito identity pool, a handler of CloudFormation Custom Resource."
-    MemorySize: 1024
-    role:
-      'Fn::GetAtt': [ CognitoDeployerLambdaExecutionRole, Arn ]
-    Timeout: 30
 
 resources:
   Resources:
@@ -206,133 +191,3 @@ resources:
                   Resource:
                     - Fn::GetAtt: [PingbotTargets, Arn]
                     - Fn::GetAtt: [PingbotResults, Arn]
-    CognitoDeployerLambdaExecutionRole:
-      Type: AWS::IAM::Role
-      Properties:
-        AssumeRolePolicyDocument:
-          Statement:
-            Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-        # "Path": "/pingbot/",
-        Path: /
-        Policies:
-          - PolicyName: DeployerLambdaFunctionPolicy
-            PolicyDocument:
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - "logs:CreateLogGroup"
-                    - "logs:CreateLogStream"
-                    - "logs:PutLogEvents"
-                  Resource: "arn:aws:logs:*:*:*"
-                - Effect: Allow
-                  Action:
-                    - "cognito-identity:CreateIdentityPool"
-                    - "cognito-identity:DeleteIdentityPool"
-                    - "cognito-identity:UpdateIdentityPool"
-                    - "cognito-identity:SetIdentityPoolRoles"
-                    - "iam:PassRole"
-                  Resource: "*"
-    CognitoIdentityPool:
-      Type: Custom::CognitoIdentityPool
-      Properties:
-        ServiceToken:
-          'Fn::GetAtt': [ PingbotLambdaCognitoDeployerLambdaFunction, Arn ]
-        Options:
-          AllowUnauthenticatedIdentities: true
-          IdentityPoolName: "pingbotWeb"
-          CognitoIdentityProviders: { "Ref": "AWS::NoValue" }
-          DeveloperProviderName: { "Ref": "AWS::NoValue" }
-          OpenIdConnectProviderARNs: { "Ref": "AWS::NoValue" }
-          SamlProviderARNs: { "Ref": "AWS::NoValue" }
-          SupportedLoginProviders: { "Ref": "AWS::NoValue" }
-    CognitoAuthenticatedRole:
-      Type: AWS::IAM::Role
-      Properties:
-        AssumeRolePolicyDocument:
-          Statement:
-            - Effect: Allow
-              Principal:
-                Federated: cognito-identity.amazonaws.com
-              Action: sts:AssumeRoleWithWebIdentity
-              Condition:
-                StringEquals:
-                  "cognito-identity.amazonaws.com:aud":
-                    "Fn::GetAtt": [ "CognitoIdentityPool", "IdentityPoolId" ]
-                ForAnyValue:StringLike:
-                  "cognito-identity.amazonaws.com:amr": "authenticated"
-    CognitoUnauthenticatedRole:
-      Type: AWS::IAM::Role
-      Properties:
-        AssumeRolePolicyDocument:
-          Statement:
-            - Effect: Allow
-              Principal:
-                Federated: cognito-identity.amazonaws.com
-              Action: sts:AssumeRoleWithWebIdentity
-              Condition:
-                StringEquals:
-                  "cognito-identity.amazonaws.com:aud":
-                    "Fn::GetAtt": [ "CognitoIdentityPool", "IdentityPoolId" ]
-                ForAnyValue:StringLike:
-                  "cognito-identity.amazonaws.com:amr": "unauthenticated"
-        # "Path": "/pingbot/",
-        Path: /
-        Policies:
-          - PolicyName: CognitoUnAuthenticatedPolicy
-            PolicyDocument:
-              Statement:
-                - Sid: CognitoAuthPermission
-                  Effect: Allow
-                  Action:
-                    - "mobileanalytics:PutEvents"
-                    - "cognito-sync:*"
-                  Resource: "*"
-                - Effect: Allow
-                  Action:
-                    - "dynamodb:DeleteItem"
-                    - "dynamodb:GetItem"
-                    - "dynamodb:PutItem"
-                    - "dynamodb:Scan"
-                  Resource:
-                    - Fn::GetAtt: [PingbotTargets, Arn]
-                    - Fn::GetAtt: [PingbotResults, Arn]
-    CognitoIdentityPoolRoles:
-      Type: Custom::CognitoIdentityPoolRoles
-      Properties:
-        ServiceToken:
-          'Fn::GetAtt': [ PingbotLambdaCognitoDeployerLambdaFunction, Arn ]
-        Options:
-          IdentityPoolId:
-            "Fn::GetAtt": [ "CognitoIdentityPool", "IdentityPoolId" ]
-          Roles:
-            authenticated:
-              "Fn::GetAtt": [ "CognitoAuthenticatedRole", "Arn" ]
-            unauthenticated:
-              "Fn::GetAtt": [ "CognitoUnauthenticatedRole", "Arn" ]
-    pingbotweb :
-      Type : AWS::S3::Bucket
-      Properties :
-        WebsiteConfiguration:
-          IndexDocument : index.html
-          ErrorDocument : error.html
-    BucketPolicy :
-      Type : AWS::S3::BucketPolicy
-      Properties :
-        Bucket : { "Ref" : "pingbotweb" }
-        PolicyDocument:
-          Id : AllowControlFromPermittedIPAddresses
-          Version: "2012-10-17"
-          Statement:
-            - Action:
-                - "s3:GetObject"
-              Effect: Allow
-              Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref": "pingbotweb" } , "/*" ]] }
-              # "Fn::GetAtt": [ "pingbotweb", "Arn" ]
-              Principal:
-                AWS : "*"
-              Condition:
-                IpAddress:
-                  aws:SourceIp: ${ env:THIS_PC_IP_ADDRESS, "0.0.0.0/0" }
