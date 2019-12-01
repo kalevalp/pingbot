@@ -17,9 +17,13 @@
   },
   "homepage": "https://github.com/kalevalp/pingbot#readme",
   "dependencies": {
-    "uuid": "^3.3.3"
+    "uuid": "^3.3.3",
+    "watchtower-log-ingestion": "^1.10.1",
+    "watchtower-monitor": "^1.8.2",
+    "watchtower-recorder": "^1.8.1"
   },
   "devDependencies": {
-    "aws-sdk": "^2.580.0"
+    "aws-sdk": "^2.580.0",
+    "serverless-step-functions": "^2.12.0"
   }
 }

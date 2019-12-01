@@ -9,3 +9,4 @@ src/web/dist/
 
 .serverless
 *~
+package-lock.json
