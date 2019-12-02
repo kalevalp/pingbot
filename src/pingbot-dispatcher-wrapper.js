@@ -7,4 +7,4 @@ const mock = {
     'aws-sdk' : aws,
 };
 
-module.exports.handler = recorder.createRecordingHandler('src/pingbot-dispatcher.js', 'handler', mock, false);
+module.exports.handler = recorder.createRecordingHandler('src/pingbot-dispatcher.js', 'handler', mock, false, () => {}, true);

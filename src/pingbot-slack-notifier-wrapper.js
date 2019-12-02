@@ -7,4 +7,4 @@ const mock = {
     'aws-sdk' : aws,
 };
 
-module.exports.handler = recorder.createRecordingHandler('src/pingbot-slack-notifier.js', 'handler', mock, false);
+module.exports.handler = recorder.createRecordingHandler('src/pingbot-slack-notifier.js', 'handler', mock, false, () => {}, true);
