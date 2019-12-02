@@ -6,15 +6,6 @@ const debug = process.env.DEBUG_WATCHTOWER;
 const botConfig = JSON.parse(require('fs').readFileSync('./src/config.json'));
 const targetsTableName = botConfig.botName + botConfig.dynamoDb.suffixTargetsTable;
 
-let context;
-let lambdaExecutionContext;
-let lambdaInputEvent;
-function updateContext(name, event, lambdaContext) {
-    context = name;
-    lambdaExecutionContext = lambdaContext;
-    lambdaInputEvent = event;
-}
-
 const getProxyConditions = [];
 const putProxyConditions = [
     {
@@ -32,4 +23,4 @@ const mock = {
     'aws-sdk' : recorder.createDDBDocClientMock(getProxyConditions, putProxyConditions, deleteProxyConditions, queryProxyConditions),
 };
 
-module.exports.handler = recorder.createRecordingHandler('src/pingbot-add-url.js', 'handler', mock, false, updateContext);
+module.exports.handler = recorder.createRecordingHandler('src/pingbot-add-url.js', 'handler', mock, false);

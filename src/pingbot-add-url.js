@@ -34,6 +34,6 @@ exports.handler = async (event) => {
 	    'Access-Control-Allow-Origin': '*',
 	    'Access-Control-Allow-Credentials': true
 	},
-	body: JSON.stringify({uuid: params.Item.uuid, resp}, null, 2),
+	body: JSON.stringify({uuid: params.Item.uuid}, null, 2),
     }
 }
