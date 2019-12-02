@@ -7,15 +7,6 @@ const resultsTableName = botConfig.botName + botConfig.dynamoDb.suffixResultsTab
 // Loading modules that fail when required via vm2
 const aws = require('aws-sdk');
 
-let context;
-let lambdaExecutionContext;
-let lambdaInputEvent;
-function updateContext(name, event, lambdaContext) {
-    context = name;
-    lambdaExecutionContext = lambdaContext;
-    lambdaInputEvent = event;
-}
-
 const getProxyConditions = [];
 const putProxyConditions = [
     {
@@ -33,4 +24,4 @@ const mock = {
     'aws-sdk' : recorder.createDDBDocClientMock(getProxyConditions, putProxyConditions, deleteProxyConditions, queryProxyConditions),
 };
 
-module.exports.handler = recorder.createRecordingHandler('src/pingbot-health-checker.js', 'handler', mock, false, updateContext);
+module.exports.handler = recorder.createRecordingHandler('src/pingbot-health-checker.js', 'handler', mock, false);

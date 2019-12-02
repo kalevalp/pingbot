@@ -23,4 +23,4 @@ const mock = {
     'aws-sdk' : recorder.createDDBDocClientMock(getProxyConditions, putProxyConditions, deleteProxyConditions, queryProxyConditions),
 };
 
-module.exports.handler = recorder.createRecordingHandler('src/pingbot-add-url.js', 'handler', mock, false);
+module.exports.handler = recorder.createRecordingHandler('src/pingbot-add-url.js', 'handler', mock, false, () => {});
